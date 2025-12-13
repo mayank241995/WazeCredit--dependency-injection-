@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Options;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using WazeCredit.Models;
 using WazeCredit.Models.ViewModels;
 using WazeCredit.Service;
+using WazeCredit.Utility.AppSettingClasses;
 
 namespace WazeCredit.Controllers
 {
@@ -11,10 +14,19 @@ namespace WazeCredit.Controllers
 
         public HomeVM homeVM { get; set; }
         private readonly IMarketForecaster _marketForecaster;
-        public HomeController(IMarketForecaster marketForecaster)
+        private readonly StripeSetting _stripeSetting;
+        private readonly SendGridSetting _sendGridSetting;
+        private readonly TwilioSetting _twilioSetting;
+        private readonly WazeForecastSetting _wazeForecastSetting;
+        public HomeController(IMarketForecaster marketForecaster,IOptions<StripeSetting> stripeoption, 
+            IOptions<SendGridSetting> sendGrideOptions, IOptions<TwilioSetting> twilioOptions, IOptions<WazeForecastSetting> wazeForcastOption)
         {
             homeVM = new HomeVM();
             _marketForecaster = marketForecaster;
+            _stripeSetting = stripeoption.Value;
+            _sendGridSetting = sendGrideOptions.Value;
+            _twilioSetting = twilioOptions.Value;
+            _wazeForecastSetting = wazeForcastOption.Value;
         }
 
         public IActionResult Index()
@@ -36,6 +48,20 @@ namespace WazeCredit.Controllers
                     break;
             }
             return View(homeVM);
+        }
+
+        public IActionResult AllConfigSetting()
+        {
+            List<string> message=new List<string>();
+            message.Add($"Stripe Key: {_stripeSetting.SecretKey}");
+            message.Add($"Stripe PublishableKey: {_stripeSetting.PublishableKey}");
+            message.Add($"SendGrid Key: {_sendGridSetting.SendGridKey}");
+            message.Add($"Twilio PhoneNumber: {_twilioSetting.PhoneNumber}");
+            message.Add($"Twilio AuthToken: {_twilioSetting.AuthToken}");
+            message.Add($"Twilio AccountSid: {_twilioSetting.AccountSid}");
+            message.Add($"Waze Forecast Tracker Enabled: {_wazeForecastSetting.ForecastTrackerEnabled}");
+            return View(message);
+
         }
 
         public IActionResult Privacy()

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WazeCredit.Data;
 using WazeCredit.Service;
+using WazeCredit.Utility.AppSettingClasses;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,11 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddTransient<IMarketForecaster, MarketForecasterV2>();
+
+builder.Services.Configure<WazeForecastSetting>(builder.Configuration.GetSection("WazeForecast"));
+builder.Services.Configure<TwilioSetting>(builder.Configuration.GetSection("Twilio"));
+builder.Services.Configure<StripeSetting>(builder.Configuration.GetSection("Stripe"));
+builder.Services.Configure<SendGridSetting>(builder.Configuration.GetSection("SendGrid"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
