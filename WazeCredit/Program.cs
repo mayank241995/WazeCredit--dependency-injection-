@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WazeCredit.Data;
+using WazeCredit.Middleware;
 using WazeCredit.Service;
+using WazeCredit.Service.LifeTimeExample;
 using WazeCredit.Utility.AppSettingClasses;
+using WazeCredit.Utility.DI_config;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,10 +21,11 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddTransient<IMarketForecaster, MarketForecasterV2>();
 
-builder.Services.Configure<WazeForecastSetting>(builder.Configuration.GetSection("WazeForecast"));
-builder.Services.Configure<TwilioSetting>(builder.Configuration.GetSection("Twilio"));
-builder.Services.Configure<StripeSetting>(builder.Configuration.GetSection("Stripe"));
-builder.Services.Configure<SendGridSetting>(builder.Configuration.GetSection("SendGrid"));
+builder.Services.AddAppSettingConfig(builder.Configuration);
+builder.Services.AddTransient<TransientService>();
+builder.Services.AddScoped<ScopedService>();
+builder.Services.AddSingleton<SingletonService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -42,7 +46,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
-
+app.UseMiddleware<CustomMiddleware>();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
